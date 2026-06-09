@@ -16,6 +16,7 @@ import CheckoutForm from "./_components/checkout-form";
 import usersGlobalStore, {
   IUsersGlobalStore,
 } from "@/global-store/users-store";
+import { createNewSubscription } from "@/actions/subscriptions";
 import { useRouter } from "next/navigation";
 
 const stripePromise = loadStripe(
@@ -77,6 +78,32 @@ function ChecoutPage() {
     clientSecret: clientSecret!,
   };
 
+  const onPaymentSuccess = async (paymentId: string) => {
+    try {
+      const payload = {
+        user_id: user?.id,
+        plan_id: selectedPaymentPlan?.mainPlan?.id,
+        start_date: startDate,
+        end_date: endDate,
+        payment_id: paymentId,
+        amount: Number(selectedPaymentPlan?.paymentPlan?.price),
+        total_duration: Number(selectedPaymentPlan?.paymentPlan?.duration),
+        is_active: true,
+      };
+      const response = await createNewSubscription(payload);
+      if (response.success) {
+        toast.success(
+          "Congratulations! Your payment was successful , Your subscription has been activated",
+        );
+        router.push("/account/user/subscriptions");
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred while processing your payment");
+    }
+  };
+
   return (
     <div>
       <PageTitle title="Checkout" />
@@ -123,7 +150,11 @@ function ChecoutPage() {
 
       {showCheckoutForm && clientSecret && (
         <Elements stripe={stripePromise} options={options}>
-          <CheckoutForm />
+          <CheckoutForm
+            showCheckoutForm={showCheckoutForm}
+            setShowCheckoutForm={setShowCheckoutForm}
+            onPaymentSuccess={onPaymentSuccess}
+          />
         </Elements>
       )}
     </div>
