@@ -15,6 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { uploadFileAndGetUrl } from "@/utils";
+import { addNewPlan, editPlanById } from "@/actions/plans";
+import { useRouter } from "next/navigation";
 
 interface PlanFormProps {
   formType?: "add" | "edit";
@@ -22,8 +26,12 @@ interface PlanFormProps {
 }
 
 function PlanForm({ formType, initialValues }: PlanFormProps) {
+  const [loading = false, setLoading] = useState<boolean>();
+  const router = useRouter();
   const [selectedMediaFiles = [], setSelectedMediaFiles] = useState<any[]>([]);
-
+  const [existingMediaUrls, setExistingMediaUrls] = useState<string[]>(
+    initialValues?.images || [],
+  );
   const formSchema = z.object({
     name: z.string().nonempty("Name is required"),
     description: z.string().nonempty("Description is required"),
@@ -48,7 +56,41 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
   });
 
   async function onSubmit(values: any) {
-    console.log(values);
+    try {
+      setLoading(true);
+
+      // save the selectedMediaFiles to the supabase storage and get the urls
+      let newMediaUrls = [];
+      for (let file of selectedMediaFiles) {
+        const response = await uploadFileAndGetUrl(file);
+        if (!response.success) {
+          throw new Error(response.message);
+        }
+        newMediaUrls.push(response.data);
+      }
+
+      values.images = newMediaUrls;
+
+      // based on the formType, call the appropriate server action (addNewPlan or editPlanById)
+      let response = null;
+      if (formType === "add") {
+        response = await addNewPlan(values);
+      } else {
+        values.images = [...values.images, ...existingMediaUrls];
+        response = await editPlanById(initialValues.id, values);
+      }
+
+      if (response.success) {
+        toast.success(response.message);
+        router.push("/account/admin/plans");
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const { fields, remove, append } = useFieldArray({
@@ -62,6 +104,18 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
     "half_yearly_price",
     "yearly_price",
   ];
+
+  const onSelectedMediaFilesRemove = (index: number) => {
+    const temp = [...selectedMediaFiles];
+    temp.splice(index, 1);
+    setSelectedMediaFiles(temp);
+  };
+
+  const onExistingMediaUrlsRemove = (index: number) => {
+    const temp = [...existingMediaUrls];
+    temp.splice(index, 1);
+    setExistingMediaUrls(temp);
+  };
 
   return (
     <div className="mt-7">
@@ -176,13 +230,53 @@ function PlanForm({ formType, initialValues }: PlanFormProps) {
                 ]);
               }}
             />
+
+            <div className="flex flex-wrap gap-5">
+              {existingMediaUrls.map((url, index) => (
+                <div
+                  className="border p-2 rounded border-gray-300 flex items-center justify-center flex-col"
+                  key={index}
+                >
+                  <img src={url} className="w-20 h-20 object-contain" />
+                  <span
+                    className="text-gray-500 text-xs cursor-pointer underline text-center w-full"
+                    onClick={() => onExistingMediaUrlsRemove(index)}
+                  >
+                    Remove
+                  </span>
+                </div>
+              ))}
+              {selectedMediaFiles.map((file, index) => (
+                <div
+                  className="border p-2 rounded border-gray-300 flex items-center justify-center flex-col"
+                  key={index}
+                >
+                  <img
+                    src={URL.createObjectURL(file)}
+                    className="w-20 h-20 object-contain"
+                  />
+                  <span
+                    className="text-gray-500 text-xs cursor-pointer underline text-center w-full"
+                    onClick={() => onSelectedMediaFilesRemove(index)}
+                  >
+                    Remove
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="flex justify-end gap-5">
-            <Button type="button" variant="outline">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/account/admin/plans")}
+            >
               Cancel
             </Button>
-            <Button type="submit">Submit</Button>
+            <Button disabled={loading} type="submit">
+              Submit
+            </Button>
           </div>
         </form>
       </Form>
