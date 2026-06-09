@@ -3,13 +3,18 @@ import { getAllPlans } from "@/actions/plans";
 import { Button } from "@/components/ui/button";
 import PageTitle from "@/components/ui/page-title";
 import Spinner from "@/components/ui/spinner";
-
+import {
+  IPlansGlobalStore,
+  plansGlobalStore,
+} from "@/global-store/plans-store";
 import { IPlan } from "@/interfaces";
 import Link from "next/link";
 import React from "react";
 import toast from "react-hot-toast";
 
 function PurchasePlanPage() {
+  const { selectedPaymentPlan, setSelectedPaymentPlan } =
+    plansGlobalStore() as IPlansGlobalStore;
   const [plans, setPlans] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -74,6 +79,12 @@ function PurchasePlanPage() {
             <div
               className="flex flex-col justify-between p-5 border border-gray-300 rounded-lg"
               key={plan.id}
+              style={{
+                border:
+                  selectedPaymentPlan?.mainPlan?.id === plan.id
+                    ? "2px solid #000"
+                    : "",
+              }}
             >
               <div className="flex flex-col gap-2 mt-5">
                 <h1 className="text-lg font-bold">{plan.name}</h1>
@@ -97,7 +108,23 @@ function PurchasePlanPage() {
               </div>
               <div className="flex flex-col gap-5 mt-5">
                 <h1 className="text-sm font-bold">Pricing</h1>
-                <select className="border border-gray-500 rounded-md p-2 text-sm">
+                <select
+                  className="border border-gray-500 rounded-md p-2 text-sm"
+                  onChange={(e) => {
+                    setSelectedPaymentPlan({
+                      mainPlan: plan,
+                      paymentPlan: paymentPlans.find(
+                        (paymentPlan) =>
+                          paymentPlan.price === Number(e.target.value),
+                      ),
+                    });
+                  }}
+                  value={
+                    selectedPaymentPlan?.mainPlan?.id === plan.id
+                      ? selectedPaymentPlan?.paymentPlan?.price
+                      : ""
+                  }
+                >
                   <option value="" className="text-sm">
                     Select Payment Plan
                   </option>
@@ -112,7 +139,12 @@ function PurchasePlanPage() {
                   ))}
                 </select>
 
-                <Button>
+                <Button
+                  disabled={
+                    !selectedPaymentPlan?.paymentPlan ||
+                    selectedPaymentPlan?.mainPlan?.id !== plan.id
+                  }
+                >
                   <Link href={"/account/user/purchase-plan/checkout"}>
                     Checkout
                   </Link>
