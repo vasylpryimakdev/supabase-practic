@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Header from "./header";
 import toast from "react-hot-toast";
 import { getCurrentUserFromSupabase } from "@/actions/users";
-import { IUser } from "@/interfaces";
 import Spinner from "@/components/ui/spinner";
+import usersGlobalStore, {
+  IUsersGlobalStore,
+} from "@/global-store/users-store";
 
 function PrivateLayout({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<IUser | null>(null);
+  const { user, setUser } =
+    usersGlobalStore() as IUsersGlobalStore;
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const fetchUser = async () => {
     try {
       setLoading(true);
-
       const response: any = await getCurrentUserFromSupabase();
-
       if (!response.success) {
         throw new Error(response.error);
       } else {
@@ -28,7 +29,7 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchUser();
   }, []);
