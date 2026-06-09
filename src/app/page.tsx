@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { SignUp, SignIn } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
+import PlansList from "./_components/plans-list";
 
 function Homepage() {
   const [openSheet, setOpenSheet] = useState(false);
@@ -37,7 +38,15 @@ function Homepage() {
           and equipment.
         </p>
 
-        <Button variant={"outline"}>Explore Plans</Button>
+        <Button
+          variant={"outline"}
+          onClick={() => {
+            const plansDiv = document.getElementById("plans");
+            plansDiv?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          Explore Plans
+        </Button>
 
         <ArrowDownToLine
           size={20}
@@ -50,6 +59,7 @@ function Homepage() {
         <h1 className="text-2xl font-bold text-center text-white mt-20">
           Our Plans
         </h1>
+        <PlansList />
       </div>
 
       <Sheet open={openSheet} onOpenChange={setOpenSheet}>
