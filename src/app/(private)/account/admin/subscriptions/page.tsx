@@ -1,7 +1,5 @@
 "use client";
-import {
-  getAllSubscriptions,
-} from "@/actions/subscriptions";
+import { getAllSubscriptions } from "@/actions/subscriptions";
 import PageTitle from "@/components/ui/page-title";
 import { ISubscription } from "@/interfaces";
 import React, { useEffect } from "react";

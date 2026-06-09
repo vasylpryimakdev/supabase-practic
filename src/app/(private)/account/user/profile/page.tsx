@@ -1,5 +1,4 @@
 "use client";
-
 import usersGlobalStore, {
   IUsersGlobalStore,
 } from "@/global-store/users-store";

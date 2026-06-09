@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import CustomLayout from "@/custom-layout";
 import { Toaster } from "react-hot-toast";
 
@@ -19,6 +19,7 @@ export default function RootLayout({
       <html lang="en">
         <body>
           <CustomLayout>{children}</CustomLayout>
+
           <Toaster position="top-center" reverseOrder={false} />
         </body>
       </html>
