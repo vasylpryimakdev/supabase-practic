@@ -36,11 +36,13 @@ function PlansList() {
         >
           <div className="flex flex-col gap-3">
             <h1 className="text-xl font-bold text-white">{plan.name}</h1>
-            <img
-              src={plan.images[0]}
-              alt={plan.name}
-              className="h-40 w-full rounded"
-            />
+            {plan.images && (
+              <img
+                src={plan.images[0]}
+                alt={plan.name}
+                className="h-40 w-full rounded"
+              />
+            )}
             <p className="text-xs font-semibold text-gray-400 line-clamp-3">
               {plan.description}
             </p>
