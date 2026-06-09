@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+import CustomLayout from "@/custom-layout";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Shey-Fit-Gym (Dev)",
@@ -15,7 +17,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          <CustomLayout>{children}</CustomLayout>
+          <Toaster position="top-center" reverseOrder={false} />
+        </body>
       </html>
     </ClerkProvider>
   );
