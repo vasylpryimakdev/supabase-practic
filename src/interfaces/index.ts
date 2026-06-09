@@ -22,3 +22,19 @@ export interface IPlan {
   created_at: string;
   updated_at: string;
 }
+
+export interface ISubscription {
+  id: string;
+  plan_id: string;
+  plan: IPlan; // run time data
+  user_id: string;
+  user: IUser; // run time data
+  payment_id: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  amount: number;
+  total_duration: number;
+
+  created_at: string;
+}
